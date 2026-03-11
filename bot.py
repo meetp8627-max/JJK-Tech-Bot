@@ -1,19 +1,26 @@
 import telebot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import feedparser
 import time
 import os
 import threading
+from datetime import datetime, timedelta
 from groq import Groq
+import re
 
-# 1. Apne Details Yahan Daalein
-TOKEN = "8649780443:AAEBBBVjrnm6xpk8WdukZndiK1-L5dVr6Z0"
-CHANNEL_ID = "@mprogojo"
-GROQ_API_KEY = "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"
+# ==========================================
+# 1. APNI DETAILS YAHAN DALO
+# ==========================================
+TOKEN = "YAHAN_APNA_NAYA_TOKEN_DALEIN"
+CHANNEL_ID = "@YAHAN_APNA_CHANNEL_USERNAME_DALEIN"
+GROQ_API_KEY = "YAHAN_APNI_GROQ_API_KEY_DALEIN"
 
 bot = telebot.TeleBot(TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# 2. Feeds - FF Leaks ko direct Channel News mein add kar diya!
+# ==========================================
+# 2. FEEDS AUR SETTINGS
+# ==========================================
 RSS_FEEDS = {
     "📱 Tech & Xiaomi": "https://xiaomitime.com/feed/",
     "🎌 Anime Updates": "https://www.cbr.com/feed/category/anime/",
@@ -22,7 +29,9 @@ RSS_FEEDS = {
 
 KEYWORDS = ["poco", "free fire", "gojo", "jujutsu kaisen", "hyperos", "xiaomi", "redmi", "ob update"]
 HISTORY_FILE = "sent_news.txt"
+today_news_digest = [] # Thala Digest ke liye memory
 
+# Memory Load/Save
 def load_sent_links():
     if os.path.exists(HISTORY_FILE):
         with open(HISTORY_FILE, "r") as file:
@@ -33,28 +42,60 @@ def save_link(link):
     with open(HISTORY_FILE, "a") as file:
         file.write(link + "\n")
 
-def get_ai_summary(title):
+# ==========================================
+# 🏏 FEATURE 3 & 5,6,7: IMAGE EXTRACTOR & AI ANALYZER
+# ==========================================
+def get_image_from_feed(entry):
+    if 'media_content' in entry and len(entry.media_content) > 0:
+        return entry.media_content[0]['url']
+    if 'description' in entry:
+        match = re.search(r'<img[^>]+src="([^">]+)"', entry.description)
+        if match:
+            return match.group(1)
+    return None
+
+def get_ai_analysis(title):
     try:
-        prompt = f"Write a 2-line exciting summary in Hinglish for this news title: '{title}'. Use casual WhatsApp chat language."
+        # AI Hype, DRS Report, aur Hashtags ka Master Prompt
+        prompt = f"Tum ek pro tech aur gaming anchor ho. Is news title ko analyze karo: '{title}'.\n\nBas EXACTLY is format mein reply dena:\n🤖 AI Summary: [2 line mast casual Hinglish summary]\n🚀 Hype Level: [1 to 10]/10\n🔍 DRS Report: [🟢 Genuine Leak / 🔴 Clickbait Alert]\n🏷️ Tags: [#tag1 #tag2 #tag3]"
+        
         chat_completion = groq_client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.1-8b-instant",
         )
         return chat_completion.choices[0].message.content.strip()
     except Exception as e:
-        return "Bhai mast update hai, link open karke puri details check karo!"
-
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    msg = "☠️ **Domain Expansion: JJK Tech V6.0!** ☠️\n\nMain 24/7 cloud par zinda hoon! Ab saari Tech, Anime aur Free Fire Leaks direct channel par aayegi AI summary ke sath. Purani news allowed nahi hai!"
-    bot.reply_to(message, msg)
+        return f"🤖 AI Summary: Bhai mast update hai, details check karo!\n🚀 Hype Level: 7/10\n🔍 DRS Report: 🟢 Genuine\n🏷️ Tags: #JJKTech #Update"
 
 # ==========================================
-# 🔄 SMART NEWS SCANNER (WITH TIME FILTER)
+# 🚁 FEATURE 4: 7 PM THALA DIGEST THREAD
 # ==========================================
+def thala_digest_scheduler():
+    global today_news_digest
+    while True:
+        # Render UTC mein chalta hai, toh IST (+5:30) mein convert kiya
+        ist_now = datetime.utcnow() + timedelta(hours=5, minutes=30)
+        
+        # Theek 7:00 PM baje
+        if ist_now.hour == 19 and ist_now.minute == 0:
+            if len(today_news_digest) > 0:
+                digest_msg = "🚁 **7 PM THALA DIGEST** 🚁\n\nBhai log, din bhar ki top 3 sabse badi khabarein ek sath:\n\n"
+                # Top 3 news nikalna
+                for i, news in enumerate(today_news_digest[:3]):
+                    digest_msg += f"🔥 {i+1}. <b>{news['title']}</b>\n🔗 <a href='{news['link']}'>Padho</a>\n\n"
+                
+                bot.send_message(CHANNEL_ID, digest_msg, parse_mode="HTML")
+                today_news_digest.clear() # Agle din ke liye memory saaf
+            time.sleep(60) # 1 minute wait taaki multiple message na jayein
+        time.sleep(30)
 
+# ==========================================
+# 🔄 MAIN NEWS SCANNER
+# ==========================================
 def check_and_send_news():
+    global today_news_digest
     sent_links = load_sent_links()
+    
     for category, url in RSS_FEEDS.items():
         try:
             feed = feedparser.parse(url)
@@ -63,39 +104,62 @@ def check_and_send_news():
                 link = latest_post.link
                 title = latest_post.title
                 
-                # ⏳ TIME FILTER: Check karo ki news kitni purani hai
+                # 24 Hour Time Filter
                 if hasattr(latest_post, 'published_parsed') and latest_post.published_parsed:
                     post_time = time.mktime(latest_post.published_parsed)
                     current_time = time.time()
-                    
-                    # Agar news 24 ghante (86400 seconds) se purani hai, toh chhod do
                     if current_time - post_time > 86400:
                         continue 
                 
                 if link not in sent_links:
-                    print(f"[{category}] Nayi news mili: {title}")
-                    ai_summary = get_ai_summary(title)
+                    print(f"Nayi news: {title}")
+                    ai_data = get_ai_analysis(title)
+                    img_url = get_image_from_feed(latest_post)
                     
+                    # Urgent Keyword Check for Auto-Pin
                     title_lower = title.lower()
                     is_urgent = any(word in title_lower for word in KEYWORDS)
                     
+                    msg_text = f"📰 <b>{category}</b>\n\n🔹 <b>{title}</b>\n\n{ai_data}"
                     if is_urgent:
-                        msg = f"🚨 <b>INSTANT ALERT: {category}</b> 🚨\n\n🔹 <b>{title}</b>\n\n🤖 <i>AI Summary:</i>\n{ai_summary}\n\n🔗 <a href='{link}'>Pura article padhein</a>"
-                    else:
-                        msg = f"📰 <b>LATEST UPDATE: {category}</b>\n\n🔹 <b>{title}</b>\n\n🤖 <i>AI Summary:</i>\n{ai_summary}\n\n🔗 <a href='{link}'>Pura article padhein</a>"
+                        msg_text = f"🚨 <b>PRIORITY ALERT: {category}</b> 🚨\n\n🔹 <b>{title}</b>\n\n{ai_data}"
+                    
+                    # 🔘 FEATURE 1: VIP BUTTONS
+                    markup = InlineKeyboardMarkup()
+                    markup.add(InlineKeyboardButton("🔗 Pura Article Padho", url=link))
+                    markup.add(InlineKeyboardButton("📤 Doston Ko Bhejo", url=f"https://t.me/share/url?url={link}&text=Bhai ye news check kar!"))
+
+                    # Send Photo or Text
+                    try:
+                        if img_url:
+                            # 📸 FEATURE 3: Auto Thumbnail
+                            sent_msg = bot.send_photo(CHANNEL_ID, img_url, caption=msg_text, parse_mode="HTML", reply_markup=markup)
+                        else:
+                            sent_msg = bot.send_message(CHANNEL_ID, msg_text, parse_mode="HTML", reply_markup=markup)
                         
-                    bot.send_message(CHANNEL_ID, msg, parse_mode="HTML")
-                    save_link(link)
-                    time.sleep(3)
+                        # 📌 FEATURE 2: Auto-Pin
+                        if is_urgent:
+                            bot.pin_chat_message(CHANNEL_ID, sent_msg.message_id)
+                            
+                        # Add to Digest
+                        today_news_digest.append({"title": title, "link": link})
+                        save_link(link)
+                        time.sleep(3)
+                        
+                    except Exception as e:
+                        print(f"Telegram bhejne mein error: {e}")
+                        
         except Exception as e:
             pass
 
 def bot_polling():
     bot.infinity_polling()
 
-print("☠️ JJK Tech Bot V6.0 Start Ho Gaya Hai! ☠️")
+print("🚁 JJK Tech Bot V7.0 (Thala Edition) Start Ho Gaya Hai! 🚁")
 
+# Start background threads
 threading.Thread(target=bot_polling, daemon=True).start()
+threading.Thread(target=thala_digest_scheduler, daemon=True).start()
 
 while True:
     check_and_send_news()
