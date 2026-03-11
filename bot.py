@@ -11,9 +11,9 @@ import re
 # ==========================================
 # 1. APNI DETAILS YAHAN DALO
 # ==========================================
-TOKEN = "YAHAN_APNA_NAYA_TOKEN_DALEIN"
-CHANNEL_ID = "@YAHAN_APNA_CHANNEL_USERNAME_DALEIN"
-GROQ_API_KEY = "YAHAN_APNI_GROQ_API_KEY_DALEIN"
+TOKEN = "8649780443:AAEBBBVjrnm6xpk8WdukZndiK1-L5dVr6Z0"
+CHANNEL_ID = "@mprogojo"
+GROQ_API_KEY = "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"
 
 bot = telebot.TeleBot(TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
