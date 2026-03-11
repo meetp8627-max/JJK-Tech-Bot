@@ -56,8 +56,27 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['ffleaks'])
 def send_ff_leaks(message):
-    # Free Fire MAX ke latest leaks aur OB update ki search
-    bot.reply_to(message, "🔥 **Free Fire MAX Leaks & Updates!** 🔥\n\nBhai, naye OB update, upcoming Evo gun skins aur new characters ki khufiya details track ho rahi hain! Jaise hi koi confirm leak aayegi, JJK Tech par sabse pehle dhamaka hoga! 💥")
+    bot.reply_to(message, "🔍 Ek second bhai, Free Fire MAX ke latest OB updates aur Evo leaks nikal raha hoon... ⏳")
+    
+    try:
+        # Google News RSS for FF Leaks
+        url = "https://news.google.com/rss/search?q=Free+Fire+MAX+OB+update+leaks&hl=en-IN&gl=IN&ceid=IN:en"
+        feed = feedparser.parse(url)
+        
+        if feed.entries:
+            msg = "🔥 **Latest FF MAX Leaks & Updates!** 🔥\n\nBhai, internet ki gehraiyon se yeh ekdum taaza leaks mili hain:\n\n"
+            
+            # Top 3 latest leaks/news dega
+            for i in range(3):
+                entry = feed.entries[i]
+                msg += f"🔹 <b>{entry.title}</b>\n🔗 <a href='{entry.link}'>Puri khabar yahan padho</a>\n\n"
+            
+            bot.send_message(message.chat.id, msg, parse_mode="HTML")
+        else:
+            bot.send_message(message.chat.id, "Bhai abhi tak Garena ki taraf se koi nayi leak bahar nahi aayi hai. Thode din baad try karna!")
+            
+    except Exception as e:
+        bot.send_message(message.chat.id, "Bhai network mein glitch hai! Gojo ka domain clash kar raha hai lagta hai. Thodi der baad /ffleaks try karna.")
 
 @bot.message_handler(commands=['ffcodes'])
 def send_ff(message):
