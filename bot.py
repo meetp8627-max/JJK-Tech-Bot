@@ -43,30 +43,41 @@ def save_link(link):
         file.write(link + "\n")
 
 # ==========================================
-# 🏏 FEATURE 3 & 5,6,7: IMAGE EXTRACTOR & AI ANALYZER
+# 📸 FEATURE 3: UPDATED IMAGE EXTRACTOR (ULTRA ROBUST)
 # ==========================================
 def get_image_from_feed(entry):
-    if 'media_content' in entry and len(entry.media_content) > 0:
-        return entry.media_content[0]['url']
-    if 'description' in entry:
-        match = re.search(r'<img[^>]+src="([^">]+)"', entry.description)
-        if match:
-            return match.group(1)
-    return None
-
-def get_ai_analysis(title):
+    # 1. Check Standard Media Tags (media:content) - Most Tech sites use this
     try:
-        # AI Hype, DRS Report, aur Hashtags ka Master Prompt
-        prompt = f"Tum ek pro tech aur gaming anchor ho. Is news title ko analyze karo: '{title}'.\n\nBas EXACTLY is format mein reply dena:\n🤖 AI Summary: [2 line mast casual Hinglish summary]\n🚀 Hype Level: [1 to 10]/10\n🔍 DRS Report: [🟢 Genuine Leak / 🔴 Clickbait Alert]\n🏷️ Tags: [#tag1 #tag2 #tag3]"
-        
-        chat_completion = groq_client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.1-8b-instant",
-        )
-        return chat_completion.choices[0].message.content.strip()
-    except Exception as e:
-        return f"🤖 AI Summary: Bhai mast update hai, details check karo!\n🚀 Hype Level: 7/10\n🔍 DRS Report: 🟢 Genuine\n🏷️ Tags: #JJKTech #Update"
+        if 'media_content' in entry and entry.media_content:
+            return entry.media_content[0]['url']
+        # 2. Check Enclosures (Used by some feeds)
+        if 'enclosures' in entry and entry.enclosures:
+            for enc in entry.enclosures:
+                if 'type' in enc and enc['type'].startswith('image/'):
+                    return enc['href']
+    except Exception:
+        pass # Ignore if these tags don't exist
 
+    # 3. Check inside HTML Content (Description or Full Content)
+    # Combining description and full article content to find <img> tags.
+    search_text = ""
+    if 'description' in entry:
+        search_text += entry.description
+    if 'content' in entry:
+        # content:encoded usually has full HTML
+        search_text += entry.content[0].value
+
+    if search_text:
+        # Robust Regex: Finds <img src="..."> with single OR double quotes
+        # Looks for valid image extensions: jpg, jpeg, png, webp, gif
+        img_match = re.search(r'<img[^>]+src=["\']([^"\']+\.(?:jpg|jpeg|png|webp|gif))["\']', search_text, re.IGNORECASE)
+        if img_match:
+            img_url = img_match.group(1)
+            # Ensure it's an absolute URL
+            if img_url.startswith('http'):
+                return img_url
+
+    return None
 # ==========================================
 # 🚁 FEATURE 4: 7 PM THALA DIGEST THREAD
 # ==========================================
