@@ -6,7 +6,7 @@ import threading
 from groq import Groq
 
 # 1. Apne Details Yahan Daalein
-TOKEN = "8649780443:AAFAyMv8-kMsQ5OlEgtuVLnkUGXEfjGtoM0"
+TOKEN = "8649780443:AAEBBBVjrnm6xpk8WdukZndiK1-L5dVr6Z0"
 CHANNEL_ID = "@mprogojo"
 GROQ_API_KEY = "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"
 
