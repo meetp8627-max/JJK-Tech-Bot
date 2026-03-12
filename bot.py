@@ -73,7 +73,25 @@ def get_image_from_feed(entry):
 
 def get_ai_analysis(title):
     try:
-        prompt = f"Tum ek pro tech aur gaming anchor ho. Is news title ko analyze karo: '{title}'.\n\nBas EXACTLY is format mein reply dena:\n🤖 AI Summary: [2 line mast casual Hinglish summary]\n🚀 Hype Level: [1 to 10]/10\n🔍 DRS Report: [🟢 Genuine Leak / 🔴 Clickbait Alert]\n🏷️ Tags: [#tag1 #tag2 #tag3]"
+        prompt = f"""Tum ek hardcore tech aur gaming anchor ho. Is news title ko analyze karo: '{title}'.
+
+        RULE 1: Agar yeh news kisi naye smartphone (jaise Poco, Xiaomi, iQOO, iPhone, etc.) ke launch, processor, ya hardware leak ki hai, toh uske specs internet/apni knowledge se nikal kar is format mein 'Spec-Sheet' likhna:
+        📱 Display: [Screen details]
+        ⬛ Processor: [Chipset name & details]
+        📸 Camera: [Megapixel details]
+        🔋 Battery: [mAh details]
+        ⚡ Charging: [Watt details]
+        💰 Price: [Expected price ya blank chhod do]
+
+        RULE 2: Agar news Anime, Free Fire MAX, ya kisi normal app update ki hai, toh sirf 2-line mast casual Hinglish summary likhna.
+
+        Dono rules ke hisaab se, bas EXACTLY is format mein reply dena:
+        🤖 AI Summary:
+        [Yahan RULE 1 ya RULE 2 ke hisaab se detail likho]
+
+        🚀 Hype Level: [1 to 10]/10
+        🔍 DRS Report: [🟢 Genuine / 🔴 Clickbait]
+        🏷️ Tags: [#tag1 #tag2 #tag3]"""
         
         chat_completion = groq_client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
@@ -82,6 +100,7 @@ def get_ai_analysis(title):
         return chat_completion.choices[0].message.content.strip()
     except Exception as e:
         return f"🤖 AI Summary: Bhai mast update hai, details check karo!\n🚀 Hype Level: 7/10\n🔍 DRS Report: 🟢 Genuine\n🏷️ Tags: #JJKTech #Update"
+
 
 # ==========================================
 # 🚁 FEATURE 4: 7 PM THALA DIGEST THREAD
