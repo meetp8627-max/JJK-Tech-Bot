@@ -19,9 +19,6 @@ GROQ_API_KEY = "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"
 bot = telebot.TeleBot(TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# ==========================================
-# 2. FEEDS AUR SETTINGS
-# ==========================================
 RSS_FEEDS = {
     "📱 Tech & Xiaomi": "https://xiaomitime.com/feed/",
     "🎌 Anime Updates": "https://www.cbr.com/feed/category/anime/",
@@ -43,9 +40,6 @@ def save_link(link):
     with open(HISTORY_FILE, "a") as file:
         file.write(link + "\n")
 
-# ==========================================
-# 📸 FEATURE 3: ROBUST IMAGE EXTRACTOR
-# ==========================================
 def get_image_from_feed(entry):
     try:
         if 'media_content' in entry and entry.media_content:
@@ -71,40 +65,42 @@ def get_image_from_feed(entry):
                 return img_url
     return None
 
-def get_ai_analysis(title):
+# ==========================================
+# 🧠 UPDATED AI DIMAAG (ANTI-FAKE SPECS)
+# ==========================================
+def get_ai_analysis(title, content=""):
     try:
-        prompt = f"""Tum ek hardcore tech aur gaming anchor ho. Is news title ko analyze karo: '{title}'.
+        prompt = f"""Tum ek pro tech aur gaming anchor ho. Is news ko analyze karo:
+        Title: '{title}'
+        Article Info: '{content}'
 
-        RULE 1: Agar yeh news kisi naye smartphone (jaise Poco, Xiaomi, iQOO, iPhone, etc.) ke launch, processor, ya hardware leak ki hai, toh uske specs internet/apni knowledge se nikal kar is format mein 'Spec-Sheet' likhna:
-        📱 Display: [Screen details]
-        ⬛ Processor: [Chipset name & details]
-        📸 Camera: [Megapixel details]
-        🔋 Battery: [mAh details]
-        ⚡ Charging: [Watt details]
-        💰 Price: [Expected price ya blank chhod do]
+        RULE 1: Agar news naye Smartphone ya Laptop ki hai, toh sirf aur sirf real Specs batao. 
+        *STRICT WARNING*: Apne mann se (hallucinate) mat karna! Agar Article Info me detail na ho aur tumhe confirm na pata ho, toh uske aage 'Not Confirmed' likhna. Laptop me smartphone wala camera mat daal dena, common sense use karna!
+        📱 Display: 
+        ⬛ Processor: 
+        📸 Camera: 
+        🔋 Battery: 
+        💰 Price: 
 
-        RULE 2: Agar news Anime, Free Fire MAX, ya kisi normal app update ki hai, toh sirf 2-line mast casual Hinglish summary likhna.
+        RULE 2: Agar news Anime, Free Fire ya kisi aur cheez ki hai, toh 2-line mast casual Hinglish summary likhna.
 
-        Dono rules ke hisaab se, bas EXACTLY is format mein reply dena:
+        EXACTLY is format me reply dena (Koi overacting ya intro lines jaise 'Rule 1 ke mutabiq' nahi likhna hai):
         🤖 AI Summary:
-        [Yahan RULE 1 ya RULE 2 ke hisaab se detail likho]
+        [Yahan Rule 1 ya Rule 2 ke hisaab se seedha text likho]
 
         🚀 Hype Level: [1 to 10]/10
         🔍 DRS Report: [🟢 Genuine / 🔴 Clickbait]
-        🏷️ Tags: [#tag1 #tag2 #tag3]"""
+        🏷️ Tags: [#tag1 #tag2]"""
         
         chat_completion = groq_client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.1-8b-instant",
+            temperature=0.3 # Low temperature makes it less creative and more factual
         )
         return chat_completion.choices[0].message.content.strip()
     except Exception as e:
-        return f"🤖 AI Summary: Bhai mast update hai, details check karo!\n🚀 Hype Level: 7/10\n🔍 DRS Report: 🟢 Genuine\n🏷️ Tags: #JJKTech #Update"
+        return "🤖 AI Summary: Bhai mast update hai, details check karo!\n🚀 Hype Level: 7/10\n🔍 DRS Report: 🟢 Genuine\n🏷️ Tags: #JJKTech"
 
-
-# ==========================================
-# 🚁 FEATURE 4: 7 PM THALA DIGEST THREAD
-# ==========================================
 def thala_digest_scheduler():
     global today_news_digest
     while True:
@@ -119,9 +115,6 @@ def thala_digest_scheduler():
             time.sleep(60) 
         time.sleep(30)
 
-# ==========================================
-# 🔄 MAIN NEWS SCANNER
-# ==========================================
 def check_and_send_news():
     global today_news_digest
     sent_links = load_sent_links()
@@ -141,7 +134,9 @@ def check_and_send_news():
                         continue 
                 
                 if link not in sent_links:
-                    ai_data = get_ai_analysis(title)
+                    # Naya Code: Ab AI ko poora article description bhi pass hoga!
+                    news_details = latest_post.description if 'description' in latest_post else ""
+                    ai_data = get_ai_analysis(title, news_details)
                     img_url = get_image_from_feed(latest_post)
                     
                     title_lower = title.lower()
@@ -172,9 +167,22 @@ def check_and_send_news():
         except Exception as e:
             pass
 
-# ==========================================
-# 🛡️ DUMMY SERVER FOR RENDER (ANTI-CLONE TRICK)
-# ==========================================
+@bot.message_handler(commands=['testnews'])
+def handle_testnews(message):
+    title = message.text.replace("/testnews", "").strip()
+    if not title:
+        bot.reply_to(message, "Bhai, command ke baad device ka naam bhi likho!")
+        return
+        
+    bot.reply_to(message, "⏳ Thala AI dimaag laga raha hai... 5 sec ruko!")
+    try:
+        # Test command me manual hint daal di
+        ai_data = get_ai_analysis(title, "Test mode - apni memory se factual details batao, fake nahi.")
+        msg_text = f"🛠️ <b>TESTING MODE</b>\n\n🔹 <b>{title}</b>\n\n{ai_data}"
+        bot.reply_to(message, msg_text, parse_mode="HTML")
+    except Exception as e:
+        bot.reply_to(message, f"Error aa gaya bhai: {e}")
+
 class DummyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -183,39 +191,15 @@ class DummyHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"JJK Tech Bot is Alive & Running! Render Khush Hai.")
 
 def keep_alive_server():
-    port = int(os.environ.get("PORT", 8080)) # Render automatically assigns this
+    port = int(os.environ.get("PORT", 8080))
     server = HTTPServer(('0.0.0.0', port), DummyHandler)
     server.serve_forever()
-# ==========================================
-# 🧪 THE "TEST" COMMAND (MANUAL CHECK)
-# ==========================================
-@bot.message_handler(commands=['testnews'])
-def handle_testnews(message):
-    # Command ke baad wala text nikalna
-    title = message.text.replace("/testnews", "").strip()
-    
-    if not title:
-        bot.reply_to(message, "Bhai, command ke baad phone ka naam bhi likho! Jaise: /testnews Poco M5 5G Launch Details")
-        return
-        
-    bot.reply_to(message, "⏳ Thala AI dimaag laga raha hai... 5 sec ruko!")
-    
-    try:
-        # AI se Spec-Sheet mangwana
-        ai_data = get_ai_analysis(title)
-        
-        # Test result wapas bhejna
-        msg_text = f"🛠️ <b>TESTING MODE</b>\n\n🔹 <b>{title}</b>\n\n{ai_data}"
-        bot.reply_to(message, msg_text, parse_mode="HTML")
-    except Exception as e:
-        bot.reply_to(message, f"Error aa gaya bhai: {e}")
-        
+
 def bot_polling():
     bot.infinity_polling()
 
-print("🚁 JJK Tech Bot V7.1 (Anti-Clone Edition) Start Ho Gaya Hai! 🚁")
+print("🚁 JJK Tech Bot V7.2 (Anti-Fake Edition) Start Ho Gaya Hai! 🚁")
 
-# Start background threads
 threading.Thread(target=keep_alive_server, daemon=True).start()
 threading.Thread(target=bot_polling, daemon=True).start()
 threading.Thread(target=thala_digest_scheduler, daemon=True).start()
