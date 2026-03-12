@@ -186,7 +186,30 @@ def keep_alive_server():
     port = int(os.environ.get("PORT", 8080)) # Render automatically assigns this
     server = HTTPServer(('0.0.0.0', port), DummyHandler)
     server.serve_forever()
-
+# ==========================================
+# 🧪 THE "TEST" COMMAND (MANUAL CHECK)
+# ==========================================
+@bot.message_handler(commands=['testnews'])
+def handle_testnews(message):
+    # Command ke baad wala text nikalna
+    title = message.text.replace("/testnews", "").strip()
+    
+    if not title:
+        bot.reply_to(message, "Bhai, command ke baad phone ka naam bhi likho! Jaise: /testnews Poco M5 5G Launch Details")
+        return
+        
+    bot.reply_to(message, "⏳ Thala AI dimaag laga raha hai... 5 sec ruko!")
+    
+    try:
+        # AI se Spec-Sheet mangwana
+        ai_data = get_ai_analysis(title)
+        
+        # Test result wapas bhejna
+        msg_text = f"🛠️ <b>TESTING MODE</b>\n\n🔹 <b>{title}</b>\n\n{ai_data}"
+        bot.reply_to(message, msg_text, parse_mode="HTML")
+    except Exception as e:
+        bot.reply_to(message, f"Error aa gaya bhai: {e}")
+        
 def bot_polling():
     bot.infinity_polling()
 
