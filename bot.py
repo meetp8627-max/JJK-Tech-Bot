@@ -11,7 +11,7 @@ import re
 # ==========================================
 # 1. APNI DETAILS YAHAN DALO
 # ==========================================
-TOKEN = "8649780443:AAEBBBVjrnm6xpk8WdukZndiK1-L5dVr6Z0"
+TOKEN = "8649780443:AAE_u3HM3jz-DKLWj8zmaeo9rdMcruIN1hw"
 CHANNEL_ID = "@mprogojo"
 GROQ_API_KEY = "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"
 
