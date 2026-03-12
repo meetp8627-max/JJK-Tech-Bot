@@ -24,7 +24,8 @@ groq_client = Groq(api_key=GROQ_API_KEY)
 RSS_FEEDS = {
     "📱 Tech & Xiaomi": "https://xiaomitime.com/feed/",
     "🎌 Anime Updates": "https://www.cbr.com/feed/category/anime/",
-    "🔥 FF MAX Leaks": "https://news.google.com/rss/search?q=Free+Fire+MAX+OB+update+leaks+today&hl=en-IN&gl=IN&ceid=IN:en"
+    "🔥 FF MAX Leaks": "https://news.google.com/rss/search?q=Free+Fire+MAX+OB+update+leaks+today&hl=en-IN&gl=IN&ceid=IN:en",
+    "🤖 Android Authority": "https://www.androidauthority.com/feed/"
 }
 
 KEYWORDS = ["poco", "free fire", "gojo", "jujutsu kaisen", "hyperos", "xiaomi", "redmi", "ob update"]
