@@ -27,8 +27,9 @@ RSS_FEEDS = {
     "🎌 OTAKU UPDATE": "https://www.cbr.com/feed/category/anime/",
     "🎮 GAMING ZONE": "https://news.google.com/rss/search?q=Free+Fire+MAX+OB+update+leaks+today&hl=en-IN&gl=IN&ceid=IN:en",
     "🤖 ANDROID NEWS": "https://www.androidauthority.com/feed/"
+    "🐦 X LEAKS (VIP)": "https://rss.app/feeds/xsSeQZ1fyB1tRCpZ.xml" # <-- Naya Addition!
 }
-
+    
 KEYWORDS = ["poco", "free fire", "gojo", "jujutsu kaisen", "hyperos", "xiaomi", "redmi", "ob update", "iphone"]
 HISTORY_FILE = "sent_news.txt"
 today_news_digest = []
