@@ -188,7 +188,45 @@ def keep_alive_server():
     port = int(os.environ.get("PORT", 8080))
     server = HTTPServer(('0.0.0.0', port), DummyHandler)
     server.serve_forever()
-
+# ==========================================
+# 🔍 THE OP SPEC-CHECKER COMMAND (ADMIN LEVEL)
+# ==========================================
+@bot.message_handler(commands=['specs'])
+def handle_specs(message):
+    device_name = message.text.replace("/specs", "").strip()
+    
+    if not device_name:
+        bot.reply_to(message, "Bhai, command ke baad phone ka naam bhi likho! Jaise: /specs Poco M5")
+        return
+        
+    bot.reply_to(message, "⏳ Thala AI database scan kar raha hai...")
+    
+    try:
+        prompt = f"""Tum ek hardcore tech expert ho. User ne '{device_name}' ke specs maange hain.
+        
+        STRICT RULES:
+        1. Agar yeh phone abhi tak market mein launch nahi hua hai (jaise S26, iPhone 18, etc.), toh saaf bol do: 'Bhai, yeh device abhi officially launch nahi hua hai, iske real specs database mein nahi hain!'
+        2. Agar yeh asli aur launched phone hai, toh apni memory se iski 100% sahi aur clear spec-sheet banao:
+        📱 Display: 
+        ⬛ Processor: 
+        📸 Camera: 
+        🔋 Battery: 
+        ⚡ Charging: 
+        
+        Sirf facts dena, apne mann se kuch fake mat banake likhna."""
+        
+        chat_completion = groq_client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.1-8b-instant",
+            temperature=0.1 # Very low temp for strict facts!
+        )
+        response_text = chat_completion.choices[0].message.content.strip()
+        
+        msg_text = f"🛠️ <b>{device_name.upper()} SPECS</b> 🛠️\n\n{response_text}"
+        bot.reply_to(message, msg_text, parse_mode="HTML")
+    except Exception as e:
+        bot.reply_to(message, "Error aa gaya bhai, baad mein try karna.")
+        
 def bot_polling():
     bot.infinity_polling()
 
