@@ -26,7 +26,7 @@ RSS_FEEDS = {
     "📱 TECH ALERT": "https://xiaomitime.com/feed/",
     "🎌 OTAKU UPDATE": "https://www.cbr.com/feed/category/anime/",
     "🎮 GAMING ZONE": "https://news.google.com/rss/search?q=Free+Fire+MAX+OB+update+leaks+today&hl=en-IN&gl=IN&ceid=IN:en",
-    "🤖 ANDROID NEWS": "https://www.androidauthority.com/feed/"
+    "🤖 ANDROID NEWS": "https://www.androidauthority.com/feed/",
     "🐦 X LEAKS (VIP)": "https://rss.app/feeds/EeMhHchJsgWa4O1T.xml" # <-- Naya Addition!
 }
     
