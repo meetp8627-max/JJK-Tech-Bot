@@ -24,7 +24,7 @@ RSS_FEEDS = {
     "🎌 OTAKU UPDATE": "https://www.cbr.com/feed/category/anime/",
     "🎮 GAMING ZONE": "https://news.google.com/rss/search?q=Free+Fire+MAX+OB+update+leaks+today&hl=en-IN&gl=IN&ceid=IN:en",
     "🤖 ANDROID NEWS": "https://www.androidauthority.com/feed/",
-    "https://rss.app/feeds/EeMhHchJsgWa4O1T.xml"
+    "📱 Daily News": "https://rss.app/feeds/EeMhHchJsgWa4O1T.xml"
     # Agar RSS.app wali X (Twitter) ki link ho, toh upar wali line ke end mein comma (,) lagakar yahan daal dena.
 }
 
